@@ -1,0 +1,13 @@
+# Ignore the whole research workspace by default.
+*
+
+# Publish only the static showcase site and deployment config.
+!.gitignore
+!README.md
+!.github/
+!.github/**
+!webpage/
+!webpage/**
+
+# Keep the manuscript PDF private even if a local copy exists in the site folder.
+webpage/paper.pdf
