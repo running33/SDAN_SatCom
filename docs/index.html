@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SDAN：ARIS辅助LEO卫星通信鲁棒联合波束赋型</title>
+    <meta
+      name="description"
+      content="SDAN研究展示页：面向ARIS辅助LEO卫星通信，展示高动态信道挑战、PFP约束引导、LSTM CSI预测、核心贡献与仿真结果。"
+    >
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header" aria-label="主导航">
+      <a class="brand" href="#top" aria-label="SDAN首页">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>SDAN-ARIS</span>
+      </a>
+      <nav class="nav-links" aria-label="页面导航">
+        <a href="#scenario">问题挑战</a>
+        <a href="#solution">解决方案</a>
+        <a href="#contributions">贡献点</a>
+        <a href="#results">仿真结果</a>
+        <a href="#paper">论文</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero-media" src="assets/sdn-hero.png" alt="低轨卫星、主动可重构智能表面与地面用户之间的波束传输示意图。">
+        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="hero-content">
+          <p class="eyebrow">ARIS辅助LEO卫星通信 · 鲁棒联合波束赋型 · 自律动作网络</p>
+          <h1 id="hero-title">SDAN：让DRL策略学会“守约束”的卫星波束赋型</h1>
+          <p class="hero-copy">
+            面向高动态LEO覆盖场景，本文提出Self-Disciplined Actor Network，将CSI预测、近端可行投影和强化学习策略优化结合起来，在提升累计和速率的同时稳定满足SINR与功率约束。
+          </p>
+          <div class="hero-actions" aria-label="主要操作">
+            <a class="primary-link" href="#contributions">查看核心贡献</a>
+            <a class="secondary-link" href="#results">查看仿真结果</a>
+          </div>
+        </div>
+        <dl class="hero-metrics" aria-label="关键结果">
+          <div>
+            <dt>QoS满足率</dt>
+            <dd>&gt;99%</dd>
+          </div>
+          <div>
+            <dt>最高CSR</dt>
+            <dd>44.9</dd>
+          </div>
+          <div>
+            <dt>PFP带来CSR增益</dt>
+            <dd>35.5%</dd>
+          </div>
+          <div>
+            <dt>在线推理</dt>
+            <dd>1次前向</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="section scenario-section" id="scenario" aria-labelledby="scenario-title">
+        <div class="section-heading">
+          <p class="eyebrow">问题与挑战</p>
+          <h2 id="scenario-title">在LEO卫星通信中，波束赋型决策同时面临“信道快变”和“约束强耦合”。</h2>
+        </div>
+        <div class="challenge-grid">
+          <article>
+            <span>01</span>
+            <h3>CSI过时</h3>
+            <p>LEO卫星高速运动导致信道在覆盖周期内快速变化，基于延迟CSI的优化结果容易偏离真实可行域。</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>非凸约束复杂</h3>
+            <p>用户SINR、卫星功率和ARIS反射功率相互耦合，联合波束赋型形成高维非凸约束优化问题。</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>传统AO难以实时</h3>
+            <p>交替优化依赖准确CSI，并需要每个时隙迭代求解，在高动态场景下计算开销和时延都不友好。</p>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>普通DRL缺少可行性意识</h3>
+            <p>惩罚项或简单投影难以稳定处理复杂约束，容易出现收益优化与约束满足之间的冲突。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section solution-section" id="solution" aria-labelledby="solution-title">
+        <div class="section-heading">
+          <p class="eyebrow">提出方案</p>
+          <h2 id="solution-title">SDAN把优化问题中的可行域知识嵌入Actor训练过程。</h2>
+        </div>
+        <div class="solution-layout">
+          <div class="solution-copy">
+            <p>
+              SDAN-DRL以LEO卫星为智能体，输出卫星波束赋型和ARIS相移的联合动作。区别于仅靠奖励惩罚的DRL，SDAN通过PFP模块在预测CSI下构造近端可行动作，将“如何满足约束”的知识传递给策略网络。
+            </p>
+            <p>
+              训练时，复合损失同时考虑动作价值、PFP可行性距离和CSI预测误差；推理时，训练好的SDAN只需一次DNN前向传播即可给出实时联合波束赋型决策。
+            </p>
+          </div>
+          <div class="flow-panel" aria-label="SDAN解决方案流程">
+            <div>
+              <strong>历史CSI窗口</strong>
+              <span>捕获覆盖周期内的信道演化</span>
+            </div>
+            <div>
+              <strong>LSTM CSI预测</strong>
+              <span>提前估计下一时刻动态可行域</span>
+            </div>
+            <div>
+              <strong>PFP近端可行投影</strong>
+              <span>寻找距离策略输出最近的可行波束</span>
+            </div>
+            <div>
+              <strong>SDAN策略更新</strong>
+              <span>平衡策略最优性、可行性与鲁棒性</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section contribution-band" id="contributions" aria-labelledby="contribution-title">
+        <div class="section-heading compact">
+          <p class="eyebrow">创新性与核心贡献</p>
+          <h2 id="contribution-title">本文贡献点</h2>
+        </div>
+        <ol class="contribution-list">
+          <li>
+            <span>01</span>
+            <p>面向ARIS辅助LEO卫星通信，建立覆盖周期内的序贯CSR最大化问题，联合考虑卫星/ARIS波束赋型、用户QoS、卫星功率预算和ARIS功率预算。</p>
+          </li>
+          <li>
+            <span>02</span>
+            <p>提出SDAN-DRL框架，使Actor不仅学习高收益动作，也通过可行性引导主动学习动态约束规则，缓解受限DRL中的最优性-可行性冲突。</p>
+          </li>
+          <li>
+            <span>03</span>
+            <p>设计PFP模块，将预测CSI下的非凸约束近似转化为可求解的QCQP，为策略输出构造最近可行动作和可学习可行边界。</p>
+          </li>
+          <li>
+            <span>04</span>
+            <p>引入LSTM CSI预测模块与复合损失函数，使PFP在更准确的动态信道估计下工作，并联合提升CSR、QoS满足率和训练鲁棒性。</p>
+          </li>
+          <li>
+            <span>05</span>
+            <p>从训练收敛、动态测试、消融实验、参数敏感性、系统扩展和复杂度角度验证SDAN-ARIS的性能优势与部署潜力。</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section method-band" aria-labelledby="method-title">
+        <div class="section-heading compact">
+          <p class="eyebrow">核心机制</p>
+          <h2 id="method-title">SDAN的四个关键环节</h2>
+        </div>
+        <div class="pipeline" aria-label="SDAN方法流程">
+          <article>
+            <span class="step-index">01</span>
+            <h3>预测CSI</h3>
+            <p>利用LSTM从滑动CSI缓存中学习时间相关性，缓解信道老化带来的决策偏差。</p>
+          </article>
+          <article>
+            <span class="step-index">02</span>
+            <h3>生成联合动作</h3>
+            <p>Policy-DNN输出卫星波束赋型矩阵和ARIS相移矩阵，直接服务下行传输。</p>
+          </article>
+          <article>
+            <span class="step-index">03</span>
+            <h3>构造可行引导</h3>
+            <p>PFP在SINR和功率约束下寻找最接近原始动作的可行决策，提供约束学习信号。</p>
+          </article>
+          <article>
+            <span class="step-index">04</span>
+            <h3>复合损失训练</h3>
+            <p>价值项、可行性项和预测项共同更新Actor，使策略逐步靠近高价值可行域。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section evidence" id="results" aria-labelledby="results-title">
+        <div class="section-heading">
+          <p class="eyebrow">仿真结果归纳</p>
+          <h2 id="results-title">按照论文LaTeX的仿真小节，对结果进行分类总结。</h2>
+        </div>
+
+        <div class="result-summary">
+          <article>
+            <strong>训练与测试性能</strong>
+            <span>收敛更快，动态CSR最高，QoS满足率超过99%。</span>
+          </article>
+          <article>
+            <strong>消融与系数分析</strong>
+            <span>PFP贡献主要CSR增益，LSTM降低CSI过时导致的策略波动。</span>
+          </article>
+          <article>
+            <strong>系统参数扩展</strong>
+            <span>在功率预算和反射单元规模变化下保持ARIS &gt; PRIS &gt; noRIS层级优势。</span>
+          </article>
+          <article>
+            <strong>复杂度分析</strong>
+            <span>训练后仅需一次DNN前向传播，避免AO逐时隙迭代求解。</span>
+          </article>
+        </div>
+
+        <div class="result-section">
+          <div class="result-text">
+            <p class="eyebrow">1. Training and Testing Performance</p>
+            <h3>训练收敛与动态测试</h3>
+            <ul>
+              <li>SDAN-ARIS在训练中达到最高稳态CSR，并比TD3-ARIS和DDPG-ARIS更快进入初始收敛阶段。</li>
+              <li>Loss曲线呈现两阶段特征：先由PFP推动Actor靠近可行域，再在可行域附近进行价值优化。</li>
+              <li>测试阶段，SDAN-ARIS在不同时间步和不同覆盖周期中保持最高动态CSR，体现跨episode鲁棒性。</li>
+              <li>QoS满足率超过99%，明显优于基于过时CSI的AO-ARIS；AO-ARIS整体约为62%。</li>
+            </ul>
+          </div>
+          <div class="result-figures">
+            <figure>
+              <object data="figs/TrainTest/Train-CSR.pdf" type="application/pdf">
+                <a href="figs/TrainTest/Train-CSR.pdf">训练CSR收敛曲线</a>
+              </object>
+              <figcaption>训练CSR收敛</figcaption>
+            </figure>
+            <figure>
+              <object data="figs/TrainTest/Losses_SDAN_N121.pdf" type="application/pdf">
+                <a href="figs/TrainTest/Losses_SDAN_N121.pdf">SDAN损失收敛曲线</a>
+              </object>
+              <figcaption>SDAN损失收敛</figcaption>
+            </figure>
+            <figure>
+              <object data="figs/TrainTest/Test-CSR.pdf" type="application/pdf">
+                <a href="figs/TrainTest/Test-CSR.pdf">动态CSR测试结果</a>
+              </object>
+              <figcaption>动态CSR测试</figcaption>
+            </figure>
+            <figure>
+              <object data="figs/TrainTest/Rate-Satisfaction.pdf" type="application/pdf">
+                <a href="figs/TrainTest/Rate-Satisfaction.pdf">QoS满足率结果</a>
+              </object>
+              <figcaption>QoS满足率</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="mini-table" aria-label="QoS满足率结果表">
+          <div><strong>SDAN-ARIS</strong><span>平均99.0%，四个用户分别为98.3%、98.5%、100.0%等高可靠水平</span></div>
+          <div><strong>TD3-ARIS</strong><span>平均99.1%，但缺少PFP/LSTM协同带来的CSR与训练稳定性优势</span></div>
+          <div><strong>DDPG-ARIS</strong><span>平均93.5%，其中UT3下降到90.1%，公平性和鲁棒性不足</span></div>
+          <div><strong>AO-ARIS</strong><span>平均62.0%，在过时CSI下明显退化</span></div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-text">
+            <p class="eyebrow">2. Ablation Experiment and Coefficients Analysis</p>
+            <h3>模块贡献与超参数影响</h3>
+            <ul>
+              <li>完整SDAN-ARIS达到最高CSR，约为44.9 bit/s/Hz，跨运行方差约为1.6。</li>
+              <li>w/o-LSTM保留PFP后，相比TD3获得35.5%的主要CSR增益，说明PFP是效率提升的关键来源。</li>
+              <li>w/o-PFP相对TD3提升有限，说明仅有CSI预测不足以有效解决复杂约束下的策略探索问题。</li>
+              <li>预测因子δ过低或过高都会削弱CSR；约束因子β增大时QoS更保守但CSR可能下降，体现可行性与最优性的权衡。</li>
+            </ul>
+          </div>
+          <div class="result-figures">
+            <figure>
+              <object data="figs/Ablation/Ablation_CSR.pdf" type="application/pdf">
+                <a href="figs/Ablation/Ablation_CSR.pdf">消融CSR结果</a>
+              </object>
+              <figcaption>消融实验：CSR</figcaption>
+            </figure>
+            <figure>
+              <object data="figs/Ablation/Ablation_QoS.pdf" type="application/pdf">
+                <a href="figs/Ablation/Ablation_QoS.pdf">消融QoS结果</a>
+              </object>
+              <figcaption>消融实验：QoS</figcaption>
+            </figure>
+            <figure>
+              <object data="figs/ParaSim/Prd-CSR.pdf" type="application/pdf">
+                <a href="figs/ParaSim/Prd-CSR.pdf">δ对CSR影响</a>
+              </object>
+              <figcaption>预测因子δ与CSR</figcaption>
+            </figure>
+            <figure>
+              <object data="figs/ParaSim/Cst-CSR.pdf" type="application/pdf">
+                <a href="figs/ParaSim/Cst-CSR.pdf">β对CSR影响</a>
+              </object>
+              <figcaption>约束因子β与CSR</figcaption>
+            </figure>
+            <figure>
+              <object data="figs/ParaSim/QoS-Satisfaction.pdf" type="application/pdf">
+                <a href="figs/ParaSim/QoS-Satisfaction.pdf">β对QoS影响</a>
+              </object>
+              <figcaption>约束因子β与QoS</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-text">
+            <p class="eyebrow">3. System Parameters versus Performance</p>
+            <h3>功率预算与反射单元规模</h3>
+            <ul>
+              <li>随着总功率预算增加，各方案CSR整体上升；SDAN-ARIS的优势在高功率区域继续扩大。</li>
+              <li>ARIS、PRIS、noRIS呈现稳定层级关系：ARIS &gt; PRIS &gt; noRIS，说明主动反射可有效缓解PRIS乘性衰落。</li>
+              <li>ARIS功率分配机制可为卫星卸载约3 dBW功率，同时保持更高CSR。</li>
+              <li>反射单元数量R增加时，RIS辅助系统CSR提升；SDAN在ARIS、PRIS、noRIS三类系统中均保持最高CSR。</li>
+            </ul>
+          </div>
+          <div class="result-figures two">
+            <figure>
+              <object data="figs/SystemSim/Pow-CSR.pdf" type="application/pdf">
+                <a href="figs/SystemSim/Pow-CSR.pdf">功率预算与CSR结果</a>
+              </object>
+              <figcaption>CSR versus power budget</figcaption>
+            </figure>
+            <figure>
+              <object data="figs/SystemSim/N_CSR.pdf" type="application/pdf">
+                <a href="figs/SystemSim/N_CSR.pdf">反射单元数与CSR结果</a>
+              </object>
+              <figcaption>CSR versus reflecting elements</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="complexity-note">
+          <p class="eyebrow">4. Complexity Analysis</p>
+          <h3>低在线复杂度</h3>
+          <p>
+            AO类方法需要在每个时隙基于CSI反复迭代求解，而SDAN在离线训练后，在线阶段只需一次DNN前向传播即可输出联合波束赋型动作，更适合LEO卫星短覆盖窗口中的实时决策。
+          </p>
+        </div>
+      </section>
+
+      <section class="section paper-panel" id="paper" aria-labelledby="paper-title">
+        <div>
+          <p class="eyebrow">论文信息</p>
+          <h2 id="paper-title">Self-Disciplined Actor Network for Robust Joint Beamforming in ARIS-Assisted LEO SatCom</h2>
+          <p>
+            本展示页根据本地LaTeX论文整理，面向读者快速说明研究场景、核心挑战、方法创新、贡献点和分类仿真结论。
+          </p>
+        </div>
+        <div class="paper-actions">
+          <a class="primary-link" href="https://github.com/running33/SDAN_SatCom">查看网页仓库</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>SDAN-ARIS研究展示页</span>
+      <a href="#top">返回顶部</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -8,6 +8,9 @@
 !.github/**
 !webpage/
 !webpage/**
+!docs/
+!docs/**
 
 # Keep the manuscript PDF private even if a local copy exists in the site folder.
 webpage/paper.pdf
+docs/paper.pdf
